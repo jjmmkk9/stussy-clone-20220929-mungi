@@ -2,6 +2,11 @@ server:
   port: 8080
 
 spring:
+  security:
+    user:
+      name: admin
+      password: 1q2w3e4r
+
   mvc:
     static-path-pattern: /static/**
 
