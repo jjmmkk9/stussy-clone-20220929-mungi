@@ -1,9 +1,12 @@
 package com.demo.config;
 
+import com.demo.service.PrincipalDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.web.bind.annotation.RequestBody;
 
 //설정 클래스로 ioc에 등록
 @Configuration
@@ -25,8 +28,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .and()              //그리고
 
-                .formLogin()        //폼로그인 방식으로 인증하겠돠
-                .loginPage("/account/login")//해당 페이지에서 폼로그인
-                .defaultSuccessUrl("/index");//이전 페이지가 없을 때 로그인 하면 index 로 보내라
+                .formLogin()//폼로그인 방식으로 인증하겠돠
+                .usernameParameter("email")// principalDetailsService의 email로 간다.
+                .loginPage("/account/login")//해당 페이지에서 폼로그인 -> GET 요청
+                .loginProcessingUrl("account/login")//로그인 로직(PrincipalDetailsService 의 loadUserByUsername을 호출하는 POST 요청
+                                                    //security 에 자동으로 컨트롤러가 만들어지고 그 포스트 매핑이 account/login
+                .defaultSuccessUrl("/index");//이전 페이지가 없을 때 돌아갈 곳 없으니까 로그인 하면 index 로 보내라
     }
 }
