@@ -7,5 +7,5 @@ registerGoButton.onclick = () =>{
 
 loginButton.onclick = () =>{
     const loginForm = document.querySelector("form");
-    loginForm.submit();
+    //loginForm.submit();
 }
