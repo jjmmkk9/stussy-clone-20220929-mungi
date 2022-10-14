@@ -11,16 +11,15 @@ body, html{
     margin: 0;
 }
 
-input{
+input, select, textarea{
     margin-bottom: 15px;
-    border: 1px solid rgb(198,198,198);
+    border: 1px solid rgb(198, 198, 198);
     padding: 10px;
-    height: 35px;
 
-    line-height: 10px;
     width: 100%;
 }
-input:focus{
+
+input:focus, select:focus, textarea:focus{
     outline: none;
     border: 1px solid black;
 }
@@ -82,6 +81,7 @@ button{
 button:active{
     animation: button-fadein 0.1s linear forwards;
 }
+
 .black-button{
     color: white;
     background-color: black;
@@ -104,9 +104,16 @@ a:hover{
     font-weight: 700;
     text-decoration: underline;
 }
+
+.a-selected{
+    font-weight: 700;
+    text-decoration: underline;
+}
 ul{
     margin: 0;
     padding: 0;
     list-style-type: none;
 }
-
+main{
+    margin-top: 60px;
+}

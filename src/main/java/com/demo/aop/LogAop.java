@@ -19,8 +19,8 @@ public class LogAop {
     @Pointcut("@annotation(com.demo.aop.annotation.LogAspect)")
     private void annotationPointCut(){
     }
-                       //리턴타입
-    @Pointcut("execution(* com.demo.controller.api.*.*(..))")
+
+    @Pointcut("execution(* com.demo.controller.api.*.*(..))")// 맨 앞에 *은 리턴타입
     private void executionPointCut(){}
 
     @Around("annotationPointCut()")
@@ -43,7 +43,7 @@ public class LogAop {
             }
             log.info("매개변수 값 >> {}", args[i]);
         }
-        log.info("메소드 호출 -- {}.{}({}) >> {}",
+        log.info("메소드 호출 -- {}/{}({}) >> {}",
                 joinPoint.getSignature().getDeclaringTypeName(),
                 joinPoint.getSignature().getName(),
                 argNameString.toString(),

@@ -18,4 +18,7 @@ spring:
 
 mybatis:
   mapper-locations:
-    -/mappers/*.xml
+    - /mappers/*.xml
+
+file:
+  path: C:/mungi/web/springboot/stussy-clone-20220929-mungi/upload/
