@@ -26,6 +26,9 @@ public class ProductServiceImpl implements ProductService{
     @Value("${file.path}")
     private String filePath;
     private final ProductRepository productRepository;
+
+
+
     @Override
     public boolean addProduct(ProductAdditionReqDto productAdditionReqDto) throws Exception {
         int resultCount = 0;
@@ -49,7 +52,7 @@ public class ProductServiceImpl implements ProductService{
             String originName = file.getOriginalFilename();
             String extension = originName.substring(originName.lastIndexOf("."));
             String temp_name = UUID.randomUUID().toString() + extension;
-            Path uploadPath = Paths.get(filePath + "/product" + temp_name);
+            Path uploadPath = Paths.get(filePath + "/product/" + temp_name);
             File f = new File(filePath + "/product");
             if(!f.exists()) {
                 f.mkdirs();
@@ -69,20 +72,21 @@ public class ProductServiceImpl implements ProductService{
         return productImgFiles;
     }
 
+
+
+
+
     @LogAspect
-    @Override                                   //이 정보들을 paramsMap에 넣어줘야 우리가 xml 가지고가서 정보 load 가능
+    @Override                                   //이 정보들은 ajax에서 받았고  paramsMap에 넣어줘야 우리가 xml 가지고가서 정보 load 가능
     public List<ProductListRespDto> getProductList(int pageNumber, String category, String searchText) throws Exception {
         Map<String, Object> paramsMap = new HashMap<String, Object>();
         paramsMap.put("index", (pageNumber - 1) * 10);
         paramsMap.put("category", category);
-        paramsMap.put("searchText",searchText);
-
+        paramsMap.put("searchText", searchText);
         List<ProductListRespDto> list = new ArrayList<ProductListRespDto>();
-
         productRepository.getProductList(paramsMap).forEach(product -> {
             list.add(product.toListRespDto());
         });
-
         return list;
     }
 }

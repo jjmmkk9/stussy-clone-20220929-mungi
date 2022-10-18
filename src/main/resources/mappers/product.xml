@@ -12,6 +12,7 @@
         <result property="temp_name" column="temp_name"></result>
     </resultMap>
 
+    <!-- db에서 가져올 product들 map   -->
     <resultMap id="product" type="com.demo.domain.Product">
         <result property="id" column="id"></result>
         <result property="category" column="category"></result>
@@ -119,7 +120,7 @@
                 product_mst
             where
                 1 = 1
-            <if test='!category == "ALL"'> <!---category 가 ALL 이 아니면 (mybatis 는 equals 안해도 됨) -->
+            <if test='category != "ALL"'> <!---category 가 ALL 이 아니면 (mybatis 는 equals 안해도 됨) -->
                 AND category = #{category}
             </if>
             <if test='searchText != null || searchText != ""'>
@@ -134,11 +135,11 @@
                                     product_mst
                                 where
                                     1 = 1
-                                    <if test='!category == "ALL"'> <!---category 가 ALL 이 아니면 (mybatis 는 equals 안해도 됨) -->
+                                    <if test='category != "ALL"'> <!---category ALL 이 아니면 (mybatis 는 equals 안해도 됨) -->
                                         AND category = #{category}
                                     </if>
-                                    <if test='searchText != null || searchText != ""'>
-                                        <!--   like 사용해서 검색어가 카테고리를 포함하는지 검색 (문자열 붙일 때 CONCAT 메소드 사용 - 쿼리문에서 %를 못쓰나봐)-->
+                                    <if test='searchText != null || searchText != ""'><!--  검색어가 nul이 아니거나 공백이 아니면  -->
+                                        <!--   like 사용해서 검색어가 상품명을 포함하는지 (문자열 붙일 때 CONCAT 메소드 사용 - 쿼리문에서 %를 못쓰나봐)-->
                                         AND name like CONCAT('%', #{searchText}, '%')
                                     </if>
                                 ) pc on (1=1)
