@@ -4,14 +4,14 @@ const searchButton = document.querySelector(".search-button");
 
 let productRepository = {
     상품관련리스트: new Array(),
-    clear상품관련리스트: () => {
+    clear상품관련리스트: function() {
         this.상품관련리스트.forEach(list => {
             while(list.length != 0) {
                 list.pop();//0이 될때까지 뒤에서 지움
             }
         });
     },
-    push상품관련리스트: (list) => {
+    push상품관련리스트: function(list) {
         this.상품관련리스트.push(list);
     }
 }
@@ -30,7 +30,7 @@ let productImageFiles = new Array();
 let 페이지이동버튼서비스 = {
     첫페이지번호: 1,
     마지막페이지번호: (productTotalCount) => (productTotalCount % 10 == 0) ? productTotalCount / 10 : Math.floor(productTotalCount / 10) + 1,
-    페이지번호생성: (nowPage) => {
+    페이지번호생성: function(nowPage) {
         let 페이지번호인덱스 = {
             start: 0,
             end: 0
@@ -45,32 +45,41 @@ let 페이지이동버튼서비스 = {
 }
 
 let 상품리스트상단기능서비스 = {
-    페이지이동버튼생성: (nowPage, productTotalCount) => {
-        const pageButtons = document.querySelector(".page-buttons");
+    pageButtonsObj: ()=> document.querySelector(".page-buttons"),
+    이전페이지이동버튼생성: function(nowPage) {
+        if(nowPage != 1){
+            this.pageButtonsObj().innerHTML = `<a href="javascript:void(0)"><li>&#60;</li></a>`;
+        }
+    },
+    다음페이지이동버튼생성: function(nowPage, maxPage) {
+        if(nowPage != maxPage){
+            this.pageButtonsObj().innerHTML = `<a href="javascript:void(0)"><li>&#60;</li></a>`;
+        }
+    },
+    페이지이동버튼생성: function(nowPage, productTotalCount) {
+        const pageButtons = this.pageButtonsObj();
+        // const pageButtonsObj = document.querySelector(".page-buttons");
 
         pageButtons.innerHTML = "";
 
-        let maxPage = 페이지이동버튼서비스.마지막페이지번호();
+        let maxPage = 페이지이동버튼서비스.마지막페이지번호(productTotalCount);
         let startIndex = 페이지이동버튼서비스.페이지번호생성().start;
         let endIndex = 페이지이동버튼서비스.페이지번호생성().end;
 
-        //////////////////////////////////////////여기서 시작
+       this.이전페이지이동버튼생성(nowPage);
 
-        if(page != 1){
-            pageButtons.innerHTML = `<a href="javascript:void(0)"><li>&#60;</li></a>`;
-        }
         for(let i = startIndex; i <= endIndex; i++) {
             if(i == page) {
                 pageButtons.innerHTML += `<a href="javascript:void(0)" class="a-selected"><li>${i}</li></a>`;
             }else {
                 pageButtons.innerHTML += `<a href="javascript:void(0)"><li>${i}</li></a>`;
             }
-
         }
-        if(page != maxPage){
-            pageButtons.innerHTML += `<a href="javascript:void(0)"><li>&#62;</li></a>`;
-        }
+        this.다음페이지이동버튼생성(nowPage, maxPage);
 
+
+    },
+    페이지이동버튼이벤트등록: function(nowPage) {
         const pageNumbers = pageButtons.querySelectorAll("li");
 
         for(let i = 0; i < pageNumbers.length; i++) {
@@ -78,29 +87,35 @@ let 상품리스트상단기능서비스 = {
                 let pageNumberText = pageNumbers[i].textContent;
 
                 if(pageNumberText == "<") {
-                    --page;
+                    --nowPage;
                 }else if(pageNumberText == ">") {
-                    ++page;
+                    ++nowPage;
                 }else {
-                    page = pageNumberText;
+                    nowPage = pageNumberText;
                 }
 
-                getList();
+                상품리스트서비스.상품리스트불러오기();
             }
         }
     }
 }
 
 let 상품리스트서비스 = {
-    상품리스트불러오기: () => {
+    상품리스트불러오기: function() {
         const responseData = this.상품리스트데이터요청();
         if(this.상품리스트데이터요청성공확인(responseData)) {
-            if(responseData.length > 0) {
-
+            if(responseData.length > 0) { //
+                상품리스트상단기능서비스.페이지이동버튼생성(상품리스트requestParams.page, responseData.productTotalCount);
+                //상품리스트 불러오기
+                상품리스트목록.master상품정보생성(responseData)
+            }else{
+                alert("등록된 상품이 없습니다.");
+                location.reload();
             }
         }
     },
     상품리스트데이터요청성공확인: (responseData) => responseData != null,
+    //요청은 이거밖에 없음
     상품리스트데이터요청: () => {
         let responseData = null;
 
@@ -113,18 +128,8 @@ let 상품리스트서비스 = {
             success: (response) => {
                 responseData = response.data;
                 console.log(response);
-
-                if(response.data.length != 0) {
-                    loadPageNumberButtons(response.data[0].productTotalCount);
-                    productDataList = response.data;
-                    addProducts(productDataList);
-                }else {
-                    alert("등록된 상품이 없습니다.");
-                    location.reload();
-                }
             },
             error: (error) => {
-                responseData = error.responseJSON;
                 console.log(error);
             }
         });
@@ -135,14 +140,11 @@ let 상품리스트서비스 = {
 
 }
 
-function 상품리스트데이터요청() {
-
-}
 
 categorySelectInput.onchange = () => {
     page = 1;
     category = categorySelectInput.value;
-    getList();
+    상품리스트서비스.상품리스트불러오기();
 }
 
 searchInput.onkeyup = () => {
@@ -150,28 +152,20 @@ searchInput.onkeyup = () => {
         searchButton.click();
     }
 }
-
 searchButton.onclick = () => {
     page = 1;
     category = categorySelectInput.value;
     searchText = searchInput.value;
-    getList();
+    상품리스트서비스.상품리스트불러오기();
 }
+const 상품리스트목록 ={
+    master상품정보생성: function(responseData){
+        const listBody = document.querySelector(".list-body");
 
-function loadPageNumberButtons(productTotalCount) {
+        listBody.innerHTML = "";
 
-
-}
-
-
-function addProducts(productList) {
-    const listBody = document.querySelector(".list-body");
-
-    listBody.innerHTML = "";
-
-    productList.forEach((product, index) => {
-
-        listBody.innerHTML += `
+        responseData.forEach((product) => {
+            listBody.innerHTML += `
         <tr>
             <td class="product-id">${product.id}</td>
             <td>${product.category}</td>
@@ -186,7 +180,13 @@ function addProducts(productList) {
             
         </tr>
         `;
-    });
+        });
+    }
+}
+
+                    //=response.data
+function addProducts(productList) {
+
 
     const detailButtons = document.querySelectorAll(".detail-button");
     const productDetails = document.querySelectorAll(".product-detail");
@@ -396,5 +396,5 @@ function getImageFiles(productImageFiles) {
 
 
 window.onload = () => {
-    상품리스트데이터요청();
+    상품리스트서비스.상품리스트불러오기();
 }
