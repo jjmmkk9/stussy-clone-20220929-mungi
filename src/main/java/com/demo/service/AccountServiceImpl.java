@@ -14,7 +14,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService{
     private final AccountRepository accountRepository;
-<<<<<<< HEAD
 
     /*
     중복이 아니면 true를
@@ -33,25 +32,11 @@ public class AccountServiceImpl implements AccountService{
     }
 
 
-
     /*
     userEntity를 db에 save = 회원가입
     그리고 result 에 반영 레코드수를 받아 result가 0이 아니면 true를 반환하는 메소드
     근데 throw Exception은 왜 해줌? 오류 발생할수도 있어서????????????????????????????????/
      */
-=======
-    @Override
-    public boolean checkDuplicateEmail(String email) {
-        User user = accountRepository.findUserByEmail(email);
-        if(user != null) {
-            Map<String, String> errorMap = new HashMap<String, String>();
-            errorMap.put("duplicateFlag", "이미 가입된 이메일입니다");
-            throw new CustomValidationException("DuplicateEmail Error", errorMap);
-        }
-        return true;
-    }
-
->>>>>>> af23d26 (AccountRepository, mappers, Service,)
     @Override
     public boolean register(RegisterReqDto registerReqDto) throws Exception {
         User userEntity = registerReqDto.toUserEntity();

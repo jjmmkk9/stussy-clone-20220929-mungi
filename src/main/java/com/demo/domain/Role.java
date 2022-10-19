@@ -6,11 +6,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-<<<<<<< HEAD
+
 @NoArgsConstructor //NoArgsConstructor를 왜 하는지??????????????????????????????
-=======
-@NoArgsConstructor
->>>>>>> af23d26 (AccountRepository, mappers, Service,)
+
 @AllArgsConstructor
 @Data
 public class Role {

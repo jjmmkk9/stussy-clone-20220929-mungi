@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/account")
 public class AccountPageController {
 
-<<<<<<< HEAD
 
 //authentication failureHandler 에서 로그인 실패하면 위에 문구띄워주려고
 ///model 주입
@@ -22,16 +21,7 @@ public String login(Model model, @RequestParam @Nullable String error){
         model.addAttribute("error", error.equals("auth") ? "이메일 또는 비밀번호가 잘못되었습니다." : "");
     }
     return "account/login";
-=======
-    @GetMapping("/login")
-    public String login(){
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        return "account/login";
->>>>>>> af23d26 (AccountRepository, mappers, Service,)
+
 }
 @GetMapping("/register")
 public String register(){
