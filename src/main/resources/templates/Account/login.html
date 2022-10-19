@@ -74,11 +74,14 @@
                         <!--  security 에서 자동으로 만든 컨트롤러 (Security Config에 있음) -->
                         <form action="/account/login" method="post">
                             <h2 class="login-subheader">로그인</h2>
+<<<<<<< HEAD
                             <div class="account-errors">
                                 <ul>
                                     <li th:text="${error}"></li>
                                 </ul>
                             </div>
+=======
+>>>>>>> af23d26 (AccountRepository, mappers, Service,)
                             <input type="email" class="login-input" name="email" placeholder="이메일" required>
                             <input type="password" class="login-input" name="password" placeholder="비밀번호" required>
                             <a href="#" class="login-show-recover">비밀번호를 잊으셨나요?</a>

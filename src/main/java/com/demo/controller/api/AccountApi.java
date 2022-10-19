@@ -23,7 +23,10 @@ import java.util.List;
 import java.util.Map;
 
 /*
+<<<<<<< HEAD
 스프링 빈에만 AOP를 적용 가능 - component
+=======
+>>>>>>> af23d26 (AccountRepository, mappers, Service,)
 처음 요청이 들어오는 곳  -> aop에서 이걸 낚아챔 -> 에러가 있으면 예외처리 되는데 생성된 예외를 -> handler가 낚아채서 handler에서
 그 예외 응답을 해준다
 ====> RestControllerAdvice
@@ -37,6 +40,7 @@ public class AccountApi {
     private final AccountService accountService;
     @ValidAspect
     @LogAspect
+<<<<<<< HEAD
     @PostMapping("/register")       //@Valid 해줘야 validation 사용하는 dto 가져올때 validation 체크함
                                     //@Validated 는 10-5 수업에서 sequence 잡아준거랑 관련 있음
     public ResponseEntity<?> register(@Validated(ValidationSequence.class) @RequestBody RegisterReqDto registerReqDto,
@@ -45,6 +49,15 @@ public class AccountApi {
         accountService.checkDuplicateEmail(registerReqDto.getEmail()); //트루 여기서 false 되면 어떻게 됨? : throw new CustomValidationException("DuplicateEmail Error", errorMap);
         accountService.register(registerReqDto);    //트루 여기서 false 되면 어떻게 됨? 걍 false
         return ResponseEntity.ok().body(new CMRespDto<>(1, "Successfully registered", registerReqDto));
+=======
+    @PostMapping("/register")   //@Valid 해줘야 validation 사용하는 dto 가져올때 validation 체크함
+                                    //Validated 는 10-5 수업에서 sequence 잡아준거랑 관련 있음
+    public ResponseEntity<?> register(@Validated(ValidationSequence.class) @RequestBody RegisterReqDto registerReqDto,
+                                      BindingResult bindingResult)//bindingResult 에 에러가 담김
+    {
+        accountService.checkDuplicateEmail(registerReqDto.getEmail());
+        return ResponseEntity.ok(new CMRespDto<>(1, "정상 가입", registerReqDto));
+>>>>>>> af23d26 (AccountRepository, mappers, Service,)
     }
 
 }
