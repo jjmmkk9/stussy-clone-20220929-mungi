@@ -15,3 +15,19 @@ const user = {
 
 var username = "test"; //var를 쓰면 참조할 수 있음
 user.printUsername(); //바깥에서 호출이 일어났기 때문에 var 변수의 username이 print 됨
+
+class UserService {
+    constructor(name) {
+        this.name = name;
+    }
+    getName () {
+        return this.name;
+    }
+    setName(name){
+        this.name = name;
+    }
+}
+const userService = new UserService("whansrl");
+console.log(userService.getName());
+userService.setName("whansrl2");
+console.log(userService.getName());

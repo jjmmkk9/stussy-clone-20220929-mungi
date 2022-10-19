@@ -104,23 +104,20 @@ a:hover{
     font-weight: 700;
     text-decoration: underline;
 }
-<<<<<<< HEAD
+
 
 .a-selected{
     font-weight: 700;
     text-decoration: underline;
 }
-=======
->>>>>>> af23d26 (AccountRepository, mappers, Service,)
+
 ul{
     margin: 0;
     padding: 0;
     list-style-type: none;
 }
-<<<<<<< HEAD
+
 main{
     margin-top: 60px;
 }
-=======
 
->>>>>>> af23d26 (AccountRepository, mappers, Service,)
