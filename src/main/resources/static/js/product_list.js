@@ -1,43 +1,27 @@
-const categorySelectInput = document.querySelector(".category-select .product-input");
-const searchInput = document.querySelector(".product-search .product-input");
-const searchButton = document.querySelector(".search-button");
-
-class ProductListReqParams{
+class ProductListReqParams {
     static #instance = null;
 
     constructor(page, category, searchValue) {
-    this.page = page;
-    this.category = category;
-    this.searchValue = searchValue;
+        this.page = page;
+        this.category = category;
+        this.searchValue = searchValue;
     }
 
     static getInstance() {
-        if(this.#instance == null){
+        if(this.#instance == null) {
             this.#instance = new ProductListReqParams(1, "ALL", "");
         }
         return this.#instance;
     }
 
-    getPage() {
-        return this.page;
-    }
-    setPage(page){
-        this.page = page;
-    }
-    getCategory(){
-        return this.category;
-    }
-    setCategory(category) {
-        this.category = category;
-    }
-    getSearchValue() {
-        return this.searchValue;
-    }
-    setSearchValue(searchValue) {
-        this.searchValue = searchValue;
-    }
+    getPage() {return this.page;}
+    setPage(page) {this.page = page;}
+    getCategory() {return this.category;}
+    setCategory(category) {this.category = category;}
+    getSearchValue() {return this.searchValue;}
+    setSearchValue(searchValue) {this.searchValue = searchValue;}
 
-    getObject(){
+    getObject() {
         return {
             page: this.page,
             category: this.category,
@@ -46,9 +30,9 @@ class ProductListReqParams{
     }
 }
 
-class ProductApi{
+class ProductApi {
 
-    productDataRequest(){
+    productDataRequest() {
         let responseData = null;
 
         $.ajax({
@@ -59,7 +43,6 @@ class ProductApi{
             dataType: "json",
             success: (response) => {
                 responseData = response.data;
-                console.log(response);
             },
             error: (error) => {
                 console.log(error);
@@ -68,8 +51,31 @@ class ProductApi{
 
         return responseData;
     }
-}
 
+    //api로 post 요청
+    //폼데이터는 json이 안돼서 put 요청으로 수정하는 기능을 날릴 수 없어서 수정을 post 요청으로 날린다.
+    productDataUpdateRequest(formData) {
+        $.ajax({
+            async: false,
+            type: "post",
+            url: "/api/admin/product/modification", //요청 주소는 modification
+            enctype: "multipart/form-data",
+            contentType: false,
+            processData: false,
+            data: formData,
+            dataType: "json",
+            success: (response) => {
+                alert("상품 수정 완료");
+                location.reload();
+            },
+            error: (error) => {
+                alert("상품 등록 실패");
+                console.log(error);
+            }
+        });
+    }
+}
+//load 될때 new ProductListService 해줌
 class ProductListService {
     //변수명 앞에 # 붙이면 프라이빗 -> 싱글톤을 위해
     static #instance = null;
@@ -77,44 +83,46 @@ class ProductListService {
     constructor() {
         this.productApi = new ProductApi();
         this.topOptionService = new TopOptionService();
-
         this.loadProductList();
     }
 
     static getInstance() {
-        if(this.#instance == null){
+        if(this.#instance == null) {
             this.#instance = new ProductListService();
         }
         return this.#instance;
     }
 
-    loadProductList(){
+    loadProductList() {
         const responseData = this.productApi.productDataRequest();
-        if(this.isSuccessReqStatus(responseData)){
-            if(responseData.length > 0){
+        if(this.isSuccessRequestStatus(responseData)) {
+            if(responseData.length > 0) {
                 this.topOptionService.loadPageMovement(responseData[0].productTotalCount);
-
+                ElementService.getInstance().createProductMst(responseData);
             }
         }
     }
 
-    isSuccessReqStatus(responseData){
+    isSuccessRequestStatus(responseData) {
         return responseData != null;
     }
 
+    updatePoduct(productRepository) {
+        this.productApi.productDataUpdateRequest(productRepository.updateFormData);
+    }
 }
 
-class TopOptionService{
+class TopOptionService {
     constructor() {
         this.pageMovement = new PageMovement();
     }
 
-    loadPageMovement (productTotalCount){
+    loadPageMovement(productTotalCount) {
         this.pageMovement.createMoveButtons(productTotalCount);
         this.pageMovement.addEvent();
     }
 
-    addOptionEvent(){
+    addOptioinsEvent() {
         const categorySelectInput = document.querySelector(".category-select .product-input");
         const searchInput = document.querySelector(".product-search .product-input");
         const searchButton = document.querySelector(".search-button");
@@ -125,7 +133,13 @@ class TopOptionService{
             productListReqParams.setPage(1);
             productListReqParams.setCategory(categorySelectInput.value);
             ProductListService.getInstance().loadProductList();
+        }
 
+        searchButton.onclick = () => {
+            productListReqParams.setPage(1);
+            productListReqParams.setCategory(categorySelectInput.value);
+            productListReqParams.setSearchValue(searchInput.value);
+            ProductListService.getInstance().loadProductList();
         }
 
         searchInput.onkeyup = () => {
@@ -133,40 +147,33 @@ class TopOptionService{
                 searchButton.click();
             }
         }
-        searchButton.onclick = () => {
-            productListReqParams.setPage(1);
-            productListReqParams.setCategory(categorySelectInput.value);
-            productListReqParams.setSearchValue(searchInput.value);
-            ProductListService.getInstance().loadProductList();
-
-        }
-
     }
+
 }
 
 class PageMovement {
     pageButtons = document.querySelector(".page-buttons");
 
-    getEndPageNumber(productTotalCount){
+    getEndPageNumber(productTotalCount) {
         return (productTotalCount % 10 == 0) ? productTotalCount / 10 : Math.floor(productTotalCount / 10) + 1;
     }
 
-    createMoveButtons(productTotalCount){
+    createMoveButtons(productTotalCount) {
         let nowPage = ProductListReqParams.getInstance().getPage();
+
         this.pageButtons.innerHTML = "";
 
-       this.createPreButton(nowPage);
-       this.createNumberButton(nowPage, productTotalCount);
-       this.createPostButton(nowPage, productTotalCount);
+        this.createPreButton(nowPage);
+        this.createNumberButton(nowPage, productTotalCount);
+        this.createPostButton(nowPage, productTotalCount);
     }
 
-    createNumberButton(nowPage, productTotalCount){
+    createNumberButton(nowPage, productTotalCount) {
         let startIndex = nowPage % 5 == 0 ? nowPage - 4 : nowPage - (nowPage % 5) + 1;
-        let endIndex = startIndex + 4 <= this.getEndPageNumber(productTotalCount) ? startIndex + 4 : this.getEndPageNumber(productTotalCount)
-
+        let endIndex = startIndex + 4 <= this.getEndPageNumber(productTotalCount) ? startIndex + 4 : this.getEndPageNumber(productTotalCount);
 
         for(let i = startIndex; i <= endIndex; i++) {
-            if(i == nowPage) {
+            if(i == this.nowPage) {
                 this.pageButtons.innerHTML += `<a href="javascript:void(0)" class="a-selected"><li>${i}</li></a>`;
             }else {
                 this.pageButtons.innerHTML += `<a href="javascript:void(0)"><li>${i}</li></a>`;
@@ -174,322 +181,361 @@ class PageMovement {
         }
     }
 
-    createPreButton(nowPage){
+    createPreButton(nowPage) {
         if(nowPage != 1){
             this.pageButtons.innerHTML = `<a href="javascript:void(0)"><li>&#60;</li></a>`;
         }
     }
-    createPostButton(nowPage, productTotalCount){
 
-        let maxPage = this.getEndPageNumber(productTotalCount)
+    createPostButton(nowPage, productTotalCount) {
+        let maxPage = this.getEndPageNumber(productTotalCount);
         if(nowPage != maxPage){
-            this.pageButtons.innerHTML = `<a href="javascript:void(0)"><li>&#60;</li></a>`;
+            this.pageButtons.innerHTML += `<a href="javascript:void(0)"><li>&#62;</li></a>`;
         }
     }
 
-    addEvent(){
-            const pageNumbers = this.pageButtons.querySelectorAll("li");
-            const productListReqParams = ProductListReqParams.getInstance();
+    addEvent() {
+        const pageNumbers = this.pageButtons.querySelectorAll("li");
+        const productListReqParams = ProductListReqParams.getInstance();
 
-            for(let i = 0; i < pageNumbers.length; i++) {
-                pageNumbers[i].onclick = () => {
-                    let pageNumberText = pageNumbers[i].textContent;
+        for(let i = 0; i < pageNumbers.length; i++) {
+            pageNumbers[i].onclick = () => {
+                let pageNumberText = pageNumbers[i].textContent;
 
-                    if(pageNumberText == "<") {
-                        productListReqParams.setPage(productListReqParams.getPage() - 1);
-                    }else if(pageNumberText == ">") {
-                        productListReqParams.setPage(productListReqParams.getPage() + 1);
-                    }else {
-                        productListReqParams.setPage(pageNumberText);
-                    }
-                    //싱글톤 해주었기 때문에 바로 접근
-                    ProductListService.getInstance().loadProductList();
+                if(pageNumberText == "<") {
+                    productListReqParams.setPage(productListReqParams.getPage() - 1);
+                }else if(pageNumberText == ">") {
+                    productListReqParams.setPage(productListReqParams.getPage() + 1);
+                }else {
+                    productListReqParams.setPage(pageNumberText);
                 }
+                //싱글톤 해주었기 때문에 바로 접근
+                ProductListService.getInstance().loadProductList();
             }
-
+        }
     }
 }
 
-
-let productRepository = {
-    상품관련리스트: new Array(),
-    clear상품관련리스트: function() {
-        this.상품관련리스트.forEach(list => {
-            while(list.length != 0) {
-                list.pop();//0이 될때까지 뒤에서 지움
-            }
-        });
-    },
-    push상품관련리스트: function(list) {
-        this.상품관련리스트.push(list);
-    }
-}
-
-
-
-
-let productDataList = null;
-let productImgList = null;
-let productFileImgList = new Array();
-let productImageFiles = new Array();
-
-
-
-
-class ElementService{
+class ElementService {
     static #instance = null;
-    static getInstance(){
-        if(this.#instance == null){
+    #productDtl = null;
+
+    static getInstance() {
+        if(this.#instance == null) {
             this.#instance = new ElementService();
         }
         return this.#instance;
     }
 
-    createProductMst(){
+    createProductMst(responseData) {
         const listBody = document.querySelector(".list-body");
 
         listBody.innerHTML = "";
 
         responseData.forEach((product) => {
             listBody.innerHTML += `
-        <tr>
-            <td class="product-id">${product.id}</td>
-            <td>${product.category}</td>
-            <td>${product.name}</td>
-            <td>${product.price}<span>원</span></td>
-            <td>${product.color}</td>
-            <td>${product.size}</td>
-            <td><button type="button" class="list-button detail-button"><i class="fa-regular fa-file-lines"></i></button></td>
-            <td><button type="button" class="list-button delete-button"><i class="fa-regular fa-trash-can"></i></button></td>
-        </tr>
-        <tr class="product-detail detail-invisible">
-            
-        </tr>
-        `;
+            <tr>
+                <td class="product-id">${product.id}</td>
+                <td>${product.category}</td>
+                <td>${product.name}</td>
+                <td>${product.price}<span>원</span></td>
+                <td>${product.color}</td>
+                <td>${product.size}</td>
+                <td><button type="button" class="list-button detail-button"><i class="fa-regular fa-file-lines"></i></button></td>
+                <td><button type="button" class="list-button delete-button"><i class="fa-regular fa-trash-can"></i></button></td>
+            </tr>
+            <tr class="product-detail detail-invisible">
+                
+            </tr>
+            `;
         });
+
+        this.addProductMstEvent(responseData);
     }
-}
 
+    addProductMstEvent(responseData) {
+        //상세버튼
+        const detailButtons = document.querySelectorAll(".detail-button");
+        //detail 담기는 tr
+        const productDetails = document.querySelectorAll(".product-detail");
 
+        detailButtons.forEach((detailButton, index) => {
+            detailButton.onclick = () => {
+                this.#productDtl = responseData[index];
 
+                if(productDetails[index].classList.contains("detail-invisible")) {
+                    let confirmationOfModification = false;
+                    let changeFlag = false;
 
-
-
-
-
-
-function addProducts(productList) {
-
-
-    const detailButtons = document.querySelectorAll(".detail-button");
-    const productDetails = document.querySelectorAll(".product-detail");
-
-    detailButtons.forEach((detailButton, index) => {
-        detailButton.onclick = () => {
-
-            if(productDetails[index].classList.contains("detail-invisible")) {
-                let confirmationOfModification = false;
-                let changeFlag = false;
-
-                productDetails.forEach((productDetail, index2) => {
-                    if(!productDetail.classList.contains("detail-invisible") && index2 != index){
-                        confirmationOfModification = true;
-                    }
-                });
-
-                productDetails.forEach((productDetail, index2) => {
-                    if(!productDetail.classList.contains("detail-invisible") && index2 != index){
-                        changeFlag = confirm("수정을 취소하시겠습니까?");
-                        if(changeFlag) {
-                            productDetail.classList.add("detail-invisible");
-                            productDetail.innerHTML = "";
-                            getProductDetail(productDetails[index], index);
-                            productDetails[index].classList.remove("detail-invisible");
+                    productDetails.forEach((productDetail, index2) => {
+                        if(!productDetail.classList.contains("detail-invisible") && index2 != index){
+                            confirmationOfModification = true;
                         }
-                    }else {
-                        if(confirmationOfModification && changeFlag) {
-                            getProductDetail(productDetails[index], index);
-                            productDetails[index].classList.remove("detail-invisible");
-                        }else if(!confirmationOfModification) {
-                            getProductDetail(productDetails[index], index);
-                            productDetails[index].classList.remove("detail-invisible");
-                        }
-                    }
-                });
+                    });
 
-            }else{
-                if(confirm("수정을 취소하시겠습니까?")){
-                    productDetails[index].classList.add("detail-invisible");
-                    productDetails[index].innerHTML = "";
+                    productDetails.forEach((productDetail, index2) => {
+                        if(!productDetail.classList.contains("detail-invisible") && index2 != index){
+                            changeFlag = confirm("수정을 취소하시겠습니까?");
+                            if(changeFlag) {
+                                productDetail.classList.add("detail-invisible");
+                                productDetail.innerHTML = "";
+                                                 //해당 인덱스의 데이터를 productDtl 이라는 변수로 전달
+                                this.createProductDtl(productDetails[index]);
+                                productDetails[index].classList.remove("detail-invisible");
+                            }
+                        }else {
+                            if(confirmationOfModification && changeFlag) {
+                                this.createProductDtl(productDetails[index]);
+                                productDetails[index].classList.remove("detail-invisible");
+                            }else if(!confirmationOfModification) {
+                                this.createProductDtl(productDetails[index]);
+                                productDetails[index].classList.remove("detail-invisible");
+                            }
+                        }
+                    });
+
+                }else{
+                    if(confirm("수정을 취소하시겠습니까?")){
+                        productDetails[index].classList.add("detail-invisible");
+                        productDetails[index].innerHTML = "";
+                    }
                 }
             }
-        }
-    });
-}
+        });
+    }
+                    //productDetails[index] -> 클릭한 인덱스의 detail
+    createProductDtl(productDetail) {
+        // productImgList = productDataList[index].productImgFiles;
 
-
-
-
-function getProductDetail(productDetail, index) {
-    productImgList = productDataList[index].productImgFiles;
-
-    productDetail.innerHTML = `
-    <td colspan="8">
-        <table class="product-info">
-            <tr>
-                <td><input type="text" class="product-input" value="${productDataList[index].price}" placeholder="가격"></td>
-                <td><input type="text" class="product-input" value="${productDataList[index].color}" placeholder="색상"></td>
-                <td><input type="text" class="product-input" value="${productDataList[index].size}" placeholder="사이즈"></td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <textarea class="product-input" placeholder="간략 설명">${productDataList[index].infoSimple}</textarea>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <textarea class="product-input" placeholder="상세 설명">${productDataList[index].infoDetail}</textarea>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <textarea class="product-input" placeholder="기타 설명">${productDataList[index].infoOption}</textarea>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <textarea class="product-input" placeholder="관리 방법">${productDataList[index].infoManagement}</textarea>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <textarea class="product-input" placeholder="배송 설명">${productDataList[index].infoShipping}</textarea>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <form enctype="multipart/form-data">
-                        <div class="product-img-inputs">
-                            <label>상품 이미지</label>
-                            <button type="button" class="add-button">추가</button>
-                            <input type="file" class="file-input product-invisible" name="file" multiple>
+        productDetail.innerHTML = `
+        <td colspan="8">
+            <table class="product-info">
+                <tr>
+                    <td><input type="text" class="product-input" value="${this.#productDtl.price}" placeholder="가격"></td>
+                    <td><input type="text" class="product-input" value="${this.#productDtl.color}" placeholder="색상"></td>
+                    <td><input type="text" class="product-input" value="${this.#productDtl.size}" placeholder="사이즈"></td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <textarea class="product-input" placeholder="간략 설명">${this.#productDtl.infoSimple}</textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <textarea class="product-input" placeholder="상세 설명">${this.#productDtl.infoDetail}</textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <textarea class="product-input" placeholder="기타 설명">${this.#productDtl.infoOption}</textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <textarea class="product-input" placeholder="관리 방법">${this.#productDtl.infoManagement}</textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <textarea class="product-input" placeholder="배송 설명">${this.#productDtl.infoShipping}</textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <form enctype="multipart/form-data">
+                            <div class="product-img-inputs">
+                                <label>상품 이미지</label>
+                                <button type="button" class="add-button">추가</button>
+                                <input type="file" class="file-input product-invisible" name="file" multiple>
+                            </div>
+                        </form>
+                        <div class="product-images">
+    
                         </div>
-                    </form>
-                    <div class="product-images">
-
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <button type="button" class="black-button update-button">수정하기</button>
-                </td>
-            </tr>
-        </table>
-    </td>
-    `;
-
-    loadImageList();
-    addImageFile();
-}
-
-function loadImageList() {
-    const productImages = document.querySelector(".product-images");
-    productImages.innerHTML = "";
-
-    productImgList.forEach(img => {
-        productImages.innerHTML += `
-            <div class="img-box">
-                <i class="fa-solid fa-xmark pre-delete"></i>
-                <img class="product-img" src="/image/product/${img.temp_name}">
-            </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <button type="button" class="black-button update-button">수정하기</button>
+                    </td>
+                </tr>
+            </table>
+        </td>
         `;
-    });
 
-    productFileImgList.forEach((img) => {
-        productImages.innerHTML += `
-            <div class="img-box">
-                <i class="fa-solid fa-xmark post-delete"></i>
-                <img class="product-img" src="${img}">
-            </div>
-        `;
-    });
+        const productRepository = new ProductRepository(this.#productDtl);
+        const productImgFileService = new ProductImgFileService(productRepository);
+        this.createProductDtlImgs(productRepository);
+        productImgFileService.addImageFileEvent();
+        this.addUpdateButtonEvent(productRepository);
 
-    const preDeleteButton = document.querySelectorAll(".pre-delete");
-    preDeleteButton.forEach((xbutton, index) => {
-        xbutton.onclick = () => {
-            if(confirm("상품 이미지를 지우시겠습니까?")) {
-                productImgList.splice(index, 1);
-                loadImageList()
-            }
-        };
-    })
-
-    const postDeleteButton = document.querySelectorAll(".post-delete");
-    postDeleteButton.forEach((xbutton, index) => {
-        xbutton.onclick = () => {
-            if(confirm("상품 이미지를 지우시겠습니까?")) {
-                productFileImgList.splice(index, 1);
-                loadImageList()
-            }
-        };
-    })
-}
-
-function addImageFile() {
-    const fileAddButton = document.querySelector(".add-button");
-    const fileInput = document.querySelector(".file-input");
-
-
-
-    fileAddButton.onclick = () => {
-        fileInput.click();
     }
 
-    fileInput.onchange = () => {
-        const formData = new FormData(document.querySelector("form"));
-        let changeFlge = false;
+    createProductDtlImgs(productRepository) {
 
-        formData.forEach((value) => {
-            if(value.size != 0) {
-                productImageFiles.push(value);
-                changeFlge = true;
-            }
+        const productImages = document.querySelector(".product-images");
+        productImages.innerHTML = "";
+
+        productRepository.oldImgList.forEach(img => {
+            productImages.innerHTML += `
+                <div class="img-box">
+                    <i class="fa-solid fa-xmark pre-delete"></i>
+                    <img class="product-img" src="/image/product/${img.temp_name}">
+                </div>
+            `;
         });
 
-        if(changeFlge){
-            getImageFiles(productImageFiles);
-            fileInput.value = null;
+        productRepository.newImgSrcList.forEach((img) => {
+            productImages.innerHTML += `
+                <div class="img-box">
+                    <i class="fa-solid fa-xmark post-delete"></i>
+                    <img class="product-img" src="${img}">
+                </div>
+            `;
+        });
+
+        this.addProductImgDeleteEvent(productRepository);
+    }
+
+    addProductImgDeleteEvent(productRepository) {
+        const preDeleteButton = document.querySelectorAll(".pre-delete");
+        preDeleteButton.forEach((xbutton, index) => {
+            xbutton.onclick = () => {
+                if(confirm("상품 이미지를 지우시겠습니까?")) {
+                    productRepository.oldImgDeleteList.push(productRepository.oldImgList[index]);
+                    productRepository.oldImgList.splice(index, 1);
+                    this.createProductDtlImgs(productRepository);
+                }
+            };
+        })
+
+        const postDeleteButton = document.querySelectorAll(".post-delete");
+        postDeleteButton.forEach((xbutton, index) => {
+            xbutton.onclick = () => {
+                if(confirm("상품 이미지를 지우시겠습니까?")) {
+                    productRepository.newImgList.splice(index, 1);
+                    productRepository.newImgSrcList.splice(index, 1);
+                    this.createProductDtlImgs(productRepository);
+                }
+            };
+        })
+    }
+
+    addUpdateButtonEvent(productRepository) {
+        const updateButton = document.querySelector(".update-button");
+
+        updateButton.onclick = () => {
+            productRepository.toUpdateFormData(this.#productDtl.id);
+            ProductListService.getInstance().updatePoduct(productRepository);
         }
     }
 }
 
-function getImageFiles(productImageFiles) {
+class ProductRepository {
+    oldImgList;
+    oldImgDeleteList;
+    newImgList;
+    newImgSrcList;
+    updateFormData;
 
-    while(productFileImgList.length != 0) {
-        productFileImgList.pop();
+    constructor(productDtl) {
+        this.oldImgList = productDtl.productImgFiles;
+        this.oldImgDeleteList = new Array();
+        this.newImgList = new Array();
+        this.newImgSrcList = new Array();
+        this.updateFormData = new FormData();
     }
 
-    productImageFiles.forEach((file, i) => {
-        const reader = new FileReader();
+    toUpdateFormData(productId) {
+        const productInputs = document.querySelectorAll(".product-info .product-input");
+        console.log(productInputs);
 
-        reader.onload = (e) => {
-            console.log("이미지 파일 하나를 리스트에 추가합니다.")
+        this.updateFormData.append("id", productId);
+        this.updateFormData.append("price", productInputs[0].value);
+        this.updateFormData.append("color", productInputs[1].value);
+        this.updateFormData.append("size", productInputs[2].value);
+        this.updateFormData.append("infoSimple", productInputs[3].value);
+        this.updateFormData.append("infoDetail", productInputs[4].value);
+        this.updateFormData.append("infoOption", productInputs[5].value);
+        this.updateFormData.append("infoManagement", productInputs[6].value);
+        this.updateFormData.append("infoShipping", productInputs[7].value);
 
-            productFileImgList.push(e.target.result);
-            console.log("index: " + i);
-            if(i == productImageFiles.length - 1) {
-                console.log("마지막 인덱스일 때만 실행")
-                loadImageList();
+        this.oldImgDeleteList.forEach(deleteImgFile => {
+            this.updateFormData.append("deleteImgFiles", deleteImgFile.temp_name);
+        });
+
+        this.newImgList.forEach(newImgFile => {
+            this.updateFormData.append("files", newImgFile);
+        });
+    }
+
+}
+
+class ProductImgFileService {
+
+    productRepository = null;
+
+    constructor(productRepository) {
+        this.productRepository = productRepository;
+    }
+
+    addImageFileEvent() {
+        const fileAddButton = document.querySelector(".add-button");
+        const fileInput = document.querySelector(".file-input");
+
+        fileAddButton.onclick = () => {
+            fileInput.click();
+        }
+
+        fileInput.onchange = () => {
+            const formData = new FormData(document.querySelector("form"));
+            let changeFlge = false;
+
+            formData.forEach((value) => {
+                if(value.size != 0) {
+                    this.productRepository.newImgList.push(value);
+                    changeFlge = true;
+                }
+            });
+
+            console.log("newImgList: " + this.productRepository.newImgList.length);
+
+            if(changeFlge){
+                this.getImageFiles();
+                fileInput.value = null;
             }
         }
+    }
 
-        setTimeout(() => {reader.readAsDataURL(file);}, i * 100);
-    });
+    getImageFiles() {
+        const newImgeList = this.productRepository.newImgList;
 
+        while(this.productRepository.newImgSrcList.length != 0) {
+            this.productRepository.newImgSrcList.pop();
+        }
+
+        newImgeList.forEach((file, i) => {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                console.log("이미지 파일 하나를 리스트에 추가합니다.")
+
+                this.productRepository.newImgSrcList.push(e.target.result);
+                if(i == newImgeList.length - 1) {
+                    console.log("마지막 인덱스일 때만 실행")
+                    ElementService.getInstance().createProductDtlImgs(this.productRepository);
+                }
+            }
+
+            setTimeout(() => {reader.readAsDataURL(file);}, i * 100);
+        });
+
+    }
 }
+
 
 window.onload = () => {
     //생성만 땅 해주면 ~
     new ProductListService();
 }
+

@@ -1,9 +1,11 @@
 package com.demo.controller.admin.api;
 
 import com.demo.Exception.CustomInternalServerErrorException;
+import com.demo.aop.annotation.LogAspect;
 import com.demo.aop.annotation.ValidAspect;
 import com.demo.dto.CMRespDto;
 import com.demo.dto.admin.ProductAdditionReqDto;
+import com.demo.dto.admin.ProductModificationReqDto;
 import com.demo.dto.validation.ValidationSequence;
 import com.demo.service.admin.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -51,5 +53,15 @@ public class ProductApi {
                                             @RequestParam @Nullable String searchValue) throws Exception {
 
         return ResponseEntity.ok(new CMRespDto<>(1, "Successfully", productService.getProductList(page, category, searchValue)));
+    }
+
+    @LogAspect
+//    @ValidAspect
+    @PostMapping("/product/modification")
+    public ResponseEntity<?> updateProduct(ProductModificationReqDto productModificationReqDto) throws Exception {
+
+
+
+        return ResponseEntity.ok(new CMRespDto<>(1, "Successfully", true));
     }
 }
