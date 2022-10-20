@@ -3,10 +3,19 @@ const searchInput = document.querySelector(".product-search .product-input");
 const searchButton = document.querySelector(".search-button");
 
 class ProductListReqParams{
+    static #instance = null;
+
     constructor(page, category, searchValue) {
     this.page = page;
     this.category = category;
     this.searchValue = searchValue;
+    }
+
+    static getInstance() {
+        if(this.#instance == null){
+            this.#instance = new ProductListReqParams(1, "ALL", "");
+        }
+        return this.#instance;
     }
 
     getPage() {
@@ -28,7 +37,7 @@ class ProductListReqParams{
         this.searchValue = searchValue;
     }
 
-    getProductListReqParams(){
+    getObject(){
         return {
             page: this.page,
             category: this.category,
@@ -39,14 +48,14 @@ class ProductListReqParams{
 
 class ProductApi{
 
-    productDataRequest(productListReqParams){
+    productDataRequest(){
         let responseData = null;
 
         $.ajax({
             async: false,
             type: "get",
             url: "/api/admin/products",
-            data: productListReqParams.getProductListReqParams(),
+            data: ProductListReqParams.getInstance().getObject(),
             dataType: "json",
             success: (response) => {
                 responseData = response.data;
@@ -62,19 +71,28 @@ class ProductApi{
 }
 
 class ProductListService {
+    //변수명 앞에 # 붙이면 프라이빗 -> 싱글톤을 위해
+    static #instance = null;
 
     constructor() {
         this.productApi = new ProductApi();
         this.topOptionService = new TopOptionService();
-        this.productListReqParams = new ProductListReqParams(1, "ALL", "");
-        this.loadProductList(this.productListReqParams);
+
+        this.loadProductList();
     }
 
-    loadProductList(productListReqParams){
-        const responseData = this.productApi.productDataRequest(productListReqParams);
+    static getInstance() {
+        if(this.#instance == null){
+            this.#instance = new ProductListService();
+        }
+        return this.#instance;
+    }
+
+    loadProductList(){
+        const responseData = this.productApi.productDataRequest();
         if(this.isSuccessReqStatus(responseData)){
             if(responseData.length > 0){
-                this.topOptionService.loadPageMovement(this, this.productListReqParams, responseData[0].productTotalCount);
+                this.topOptionService.loadPageMovement(responseData[0].productTotalCount);
 
             }
         }
@@ -91,9 +109,38 @@ class TopOptionService{
         this.pageMovement = new PageMovement();
     }
 
-    loadPageMovement(productListService, productListReqParams, productTotalCount){
-        this.pageMovement.createMoveButtons(productListReqParams.getPage(), productTotalCount);
-        this.pageMovement.addEvent(productListService, productListReqParams);
+    loadPageMovement (productTotalCount){
+        this.pageMovement.createMoveButtons(productTotalCount);
+        this.pageMovement.addEvent();
+    }
+
+    addOptionEvent(){
+        const categorySelectInput = document.querySelector(".category-select .product-input");
+        const searchInput = document.querySelector(".product-search .product-input");
+        const searchButton = document.querySelector(".search-button");
+
+        const productListReqParams = ProductListReqParams.getInstance();
+
+        categorySelectInput.onchange = () => {
+            productListReqParams.setPage(1);
+            productListReqParams.setCategory(categorySelectInput.value);
+            ProductListService.getInstance().loadProductList();
+
+        }
+
+        searchInput.onkeyup = () => {
+            if(window.event.keyCode == 13) {
+                searchButton.click();
+            }
+        }
+        searchButton.onclick = () => {
+            productListReqParams.setPage(1);
+            productListReqParams.setCategory(categorySelectInput.value);
+            productListReqParams.setSearchValue(searchInput.value);
+            ProductListService.getInstance().loadProductList();
+
+        }
+
     }
 }
 
@@ -104,17 +151,18 @@ class PageMovement {
         return (productTotalCount % 10 == 0) ? productTotalCount / 10 : Math.floor(productTotalCount / 10) + 1;
     }
 
-    createMoveButtons(nowPage, productTotalCount){
+    createMoveButtons(productTotalCount){
+        let nowPage = ProductListReqParams.getInstance().getPage();
         this.pageButtons.innerHTML = "";
 
        this.createPreButton(nowPage);
        this.createNumberButton(nowPage, productTotalCount);
-       this.createPostButton(nowPage);
+       this.createPostButton(nowPage, productTotalCount);
     }
 
     createNumberButton(nowPage, productTotalCount){
         let startIndex = nowPage % 5 == 0 ? nowPage - 4 : nowPage - (nowPage % 5) + 1;
-        let endIndex = startIndex + 4 <= this.getEndPageNumber(productTotalCount) ? startIndex + 4 : this.getEndPageNumber(productTotalCount)(productTotalCount);
+        let endIndex = startIndex + 4 <= this.getEndPageNumber(productTotalCount) ? startIndex + 4 : this.getEndPageNumber(productTotalCount)
 
 
         for(let i = startIndex; i <= endIndex; i++) {
@@ -132,14 +180,16 @@ class PageMovement {
         }
     }
     createPostButton(nowPage, productTotalCount){
+
         let maxPage = this.getEndPageNumber(productTotalCount)
         if(nowPage != maxPage){
             this.pageButtons.innerHTML = `<a href="javascript:void(0)"><li>&#60;</li></a>`;
         }
     }
 
-    addEvent(productListService,productListReqParams){
+    addEvent(){
             const pageNumbers = this.pageButtons.querySelectorAll("li");
+            const productListReqParams = ProductListReqParams.getInstance();
 
             for(let i = 0; i < pageNumbers.length; i++) {
                 pageNumbers[i].onclick = () => {
@@ -152,84 +202,12 @@ class PageMovement {
                     }else {
                         productListReqParams.setPage(pageNumberText);
                     }
-
-                    productListService.loadProductList(productListReqParams);
+                    //싱글톤 해주었기 때문에 바로 접근
+                    ProductListService.getInstance().loadProductList();
                 }
             }
 
     }
-
-
-}
-
-
-
-
-let 상품리스트상단기능서비스 = {
-    페이지이동버튼이벤트등록: function() {
-        const pageNumbers = this.getPageButtonsObj().querySelectorAll("li");
-
-        for(let i = 0; i < pageNumbers.length; i++) {
-            pageNumbers[i].onclick = () => {
-                let pageNumberText = pageNumbers[i].textContent;
-
-                if(pageNumberText == "<") {
-                    --상품리스트requestParams.page;
-                }else if(pageNumberText == ">") {
-                    ++상품리스트requestParams.page;
-                }else {
-                    상품리스트requestParams.page = pageNumberText;
-                }
-
-                상품리스트서비스.상품리스트불러오기();
-            }
-        }
-    }
-}
-
-
-let 상품리스트서비스 = {
-    상품리스트불러오기: function() {
-        //responseData 에 값 들어오고
-        const responseData = this.상품리스트데이터요청();
-        if(this.상품리스트데이터요청성공확인(responseData)) {
-
-            if(responseData.length > 0) { //
-                상품리스트상단기능서비스.init(상품리스트requestParams.page, responseData[0].productTotalCount);
-                상품리스트상단기능서비스.페이지이동버튼생성();
-                상품리스트상단기능서비스.페이지이동버튼이벤트등록();
-                //상품리스트 불러오기
-                상품리스트목록.master상품정보생성(responseData)
-            }else{
-                alert("등록된 상품이 없습니다.");
-                location.reload();
-            }
-        }
-    },
-    상품리스트데이터요청성공확인: (responseData) => responseData != null,///null 아니면 ture
-    //요청은 이거밖에 없음
-    상품리스트데이터요청: () => {
-        let responseData = null;
-
-        $.ajax({
-            async: false,
-            type: "get",
-            url: "/api/admin/products",
-            data: 상품리스트requestParams,
-            dataType: "json",
-            success: (response) => {
-                responseData = response.data;
-                console.log(response);
-            },
-            error: (error) => {
-                console.log(error);
-            }
-        });
-
-        return responseData;
-    },
-
-
 }
 
 
@@ -250,14 +228,6 @@ let productRepository = {
 
 
 
-
-
-
-
-
-
-
-
 let productDataList = null;
 let productImgList = null;
 let productFileImgList = new Array();
@@ -266,29 +236,16 @@ let productImageFiles = new Array();
 
 
 
-
-
-
-
-categorySelectInput.onchange = () => {
-    page = 1;
-    category = categorySelectInput.value;
-    getList();
-}
-
-searchInput.onkeyup = () => {
-    if(window.event.keyCode == 13) {
-        searchButton.click();
+class ElementService{
+    static #instance = null;
+    static getInstance(){
+        if(this.#instance == null){
+            this.#instance = new ElementService();
+        }
+        return this.#instance;
     }
-}
-searchButton.onclick = () => {
-    page = 1;
-    category = categorySelectInput.value;
-    searchText = searchInput.value;
-    getList();
-}
-const 상품리스트목록 ={
-    master상품정보생성: function(responseData){
+
+    createProductMst(){
         const listBody = document.querySelector(".list-body");
 
         listBody.innerHTML = "";
@@ -313,7 +270,14 @@ const 상품리스트목록 ={
     }
 }
 
-                    //=response.data
+
+
+
+
+
+
+
+
 function addProducts(productList) {
 
 
@@ -362,6 +326,9 @@ function addProducts(productList) {
         }
     });
 }
+
+
+
 
 function getProductDetail(productDetail, index) {
     productImgList = productDataList[index].productImgFiles;
@@ -521,8 +488,6 @@ function getImageFiles(productImageFiles) {
     });
 
 }
-
-
 
 window.onload = () => {
     //생성만 땅 해주면 ~
