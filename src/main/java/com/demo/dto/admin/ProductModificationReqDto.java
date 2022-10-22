@@ -29,7 +29,7 @@ public class ProductModificationReqDto {
     private String infoManagement;
     private String infoShipping;
 
-    private List<String> deleteImgFiles; //지운 파일<이름?>
+    private List<String> deleteImgFiles; //지운 파일<이름>
     private List<MultipartFile> files;  //추가한 파일리스트<파일>
 
     public Product toProductEntity(){

@@ -53,6 +53,7 @@ public class ProductServiceImpl implements ProductService{
 
     private List<ProductImgFile> getProductImgFiles(List<MultipartFile> files, int productId) throws Exception {
         List<ProductImgFile> productImgFiles = new ArrayList<ProductImgFile>();
+
         //받아 온 files 에서 file 하나씩
         files.forEach(file -> {
             String originName = file.getOriginalFilename();
@@ -116,6 +117,7 @@ public class ProductServiceImpl implements ProductService{
             if(productModificationReqDto.getFiles() != null){
                                                 //dto의 files와 product_id 가져와
                 insertStatus = insertProductImg(productModificationReqDto.getFiles(), productModificationReqDto.getId());
+                //db에 insert 잘 됐으면 true
             }
             if(productModificationReqDto.getDeleteImgFiles() != null){
                                                 //dto의 deleteFiles와 product_id 가져와
@@ -150,6 +152,7 @@ public class ProductServiceImpl implements ProductService{
         map.put("deleteImgFiles", deleteImgFiles);
 
         int result = productRepository.deleteImgFiles(map);
+
         //delete 건수가 0이 아니면!
         if(result != 0){
             //파일 delete도 반복 돌아야한다
@@ -158,15 +161,21 @@ public class ProductServiceImpl implements ProductService{
                 Path uploadPath = Paths.get(filePath + "/product/" + temp_name);
 
                 File file = new File(uploadPath.toUri());
-                if(file.exists()){
-                    file.delete();
+                if(!file.exists()){
+                    file.mkdirs();
+                    if(!file.delete()){
+                        throw new RuntimeException();
+                    }
                         //람다라서 이렇게 접근 불가하대
                         //deleteSuccess++;
+                }else{
+                    if(!file.delete()){
+                        throw new RuntimeException();
+                    }
                 }
             });
             status = true;
         }
-
         return status;
     }
     @Override
