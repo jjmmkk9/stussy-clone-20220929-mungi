@@ -45,8 +45,8 @@ function getImagePreview() {
                 };
             })
         }
-
-        setTimeout(reader.readAsDataURL(file), i * 100);
+                //함수 정의로 바꿔줌
+        setTimeout(()=>{reader.readAsDataURL(file)}, i * 100);
 
 
     });

@@ -18,7 +18,9 @@ public class AuthFailureHandler implements AuthenticationFailureHandler {
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-                                                    //error를 auth 라는 걸 보내줌
-        response.sendRedirect("/account/login?error=auth");
+                                                    //error 를 auth 라는 걸 보내줌
+
+        response.sendRedirect("/account/login?error=auth"); //AccountPageController의 error 여기서 받는것.
+
     }
 }

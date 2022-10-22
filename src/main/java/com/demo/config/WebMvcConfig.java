@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Value("${file.path")
+    @Value("${file.path}") //개열받네 } 안쳐서 여태 이미지 안들고와짐
     private String filePath;
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

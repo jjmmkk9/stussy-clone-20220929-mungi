@@ -15,4 +15,10 @@ public interface ProductRepository {
     public int saveImgFiles(List<ProductImgFile> product_img_files) throws Exception;
 
     public List<Product> getProductList(Map<String, Object> map) throws Exception;
-}
+
+    public int setProduct(Product product) throws Exception;
+    public int deleteImgFiles(Map<String, Object> map) throws Exception;
+
+    public List<ProductImgFile> getProductImgsList(int productId) throws Exception;
+    public int deleteProduct(int productId) throws Exception;
+ }

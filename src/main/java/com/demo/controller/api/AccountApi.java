@@ -23,10 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 /*
-<<<<<<< HEAD
+
 스프링 빈에만 AOP를 적용 가능 - component
-=======
->>>>>>> af23d26 (AccountRepository, mappers, Service,)
+
 처음 요청이 들어오는 곳  -> aop에서 이걸 낚아챔 -> 에러가 있으면 예외처리 되는데 생성된 예외를 -> handler가 낚아채서 handler에서
 그 예외 응답을 해준다
 ====> RestControllerAdvice

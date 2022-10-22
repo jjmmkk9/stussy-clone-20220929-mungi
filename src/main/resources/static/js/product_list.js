@@ -74,6 +74,22 @@ class ProductApi {
             }
         });
     }
+    productDataDeleteRequest(productId){
+        $.ajax({
+            async: false,
+            type: "DELETE",
+            url: "/api/admin/product/" + productId,
+            dataType: "json",
+            success: (response) => {
+                alert("삭제 완료");
+                location.reload();
+            },
+            error: (error) => {
+                console.log(error);
+                alert("삭제 실패");
+            }
+        })
+    }
 }
 //load 될때 new ProductListService 해줌
 class ProductListService {
@@ -118,11 +134,12 @@ class TopOptionService {
     }
 
     loadPageMovement(productTotalCount) {
+        this.addOptionsEvent();
         this.pageMovement.createMoveButtons(productTotalCount);
         this.pageMovement.addEvent();
     }
 
-    addOptioinsEvent() {
+    addOptionsEvent() {
         const categorySelectInput = document.querySelector(".category-select .product-input");
         const searchInput = document.querySelector(".product-search .product-input");
         const searchButton = document.querySelector(".search-button");
@@ -142,13 +159,12 @@ class TopOptionService {
             ProductListService.getInstance().loadProductList();
         }
 
-        searchInput.onkeyup = () => {
-            if(window.event.keyCode == 13) {
+        searchInput.onkeyup = (e) => {
+            if(e.keyCode == 13) {
                 searchButton.click();
             }
         }
     }
-
 }
 
 class PageMovement {
@@ -203,9 +219,9 @@ class PageMovement {
                 let pageNumberText = pageNumbers[i].textContent;
 
                 if(pageNumberText == "<") {
-                    productListReqParams.setPage(productListReqParams.getPage() - 1);
+                    productListReqParams.setPage(Number(productListReqParams.getPage()) - 1);
                 }else if(pageNumberText == ">") {
-                    productListReqParams.setPage(productListReqParams.getPage() + 1);
+                    productListReqParams.setPage(Number(productListReqParams.getPage()) + 1);
                 }else {
                     productListReqParams.setPage(pageNumberText);
                 }
@@ -215,6 +231,7 @@ class PageMovement {
         }
     }
 }
+
 
 class ElementService {
     static #instance = null;
@@ -254,9 +271,8 @@ class ElementService {
     }
 
     addProductMstEvent(responseData) {
-        //상세버튼
         const detailButtons = document.querySelectorAll(".detail-button");
-        //detail 담기는 tr
+        const deleteButtons = document.querySelectorAll(".delete-button");
         const productDetails = document.querySelectorAll(".product-detail");
 
         detailButtons.forEach((detailButton, index) => {
@@ -279,7 +295,7 @@ class ElementService {
                             if(changeFlag) {
                                 productDetail.classList.add("detail-invisible");
                                 productDetail.innerHTML = "";
-                                                 //해당 인덱스의 데이터를 productDtl 이라는 변수로 전달
+                                                //해당 인덱스의 데이터를 productDtl 이라는 변수로 전달
                                 this.createProductDtl(productDetails[index]);
                                 productDetails[index].classList.remove("detail-invisible");
                             }
@@ -302,8 +318,17 @@ class ElementService {
                 }
             }
         });
+
+        deleteButtons.forEach((deleteButton, index) => {
+            deleteButton.onclick = () => {
+                if(confirm("상품을 삭제하시겠습니까?")){
+                    const productApi = new ProductApi();            //productId 인데 이게 어디서????
+                    productApi.productDataDeleteRequest(responseData[index].id);
+                }
+            }
+        });
     }
-                    //productDetails[index] -> 클릭한 인덱스의 detail
+                //productDetails[index] -> 클릭한 인덱스의 detail : line 299
     createProductDtl(productDetail) {
         // productImgList = productDataList[index].productImgFiles;
 
