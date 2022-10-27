@@ -1,3 +1,5 @@
+
+
 class ProductListReqParams {
     static #instance = null;
 
@@ -45,20 +47,19 @@ class ProductApi {
                 responseData = response.data;
             },
             error: (error) => {
-                console.log(error);
+                console.log(error); //에러 왔는데 어디서 왔지
+
             }
         });
 
         return responseData;
     }
 
-    //api로 post 요청
-    //폼데이터는 json이 안돼서 put 요청으로 수정하는 기능을 날릴 수 없어서 수정을 post 요청으로 날린다.
     productDataUpdateRequest(formData) {
         $.ajax({
             async: false,
             type: "post",
-            url: "/api/admin/product/modification", //요청 주소는 modification
+            url: "/api/admin/product/modification",
             enctype: "multipart/form-data",
             contentType: false,
             processData: false,
@@ -69,31 +70,31 @@ class ProductApi {
                 location.reload();
             },
             error: (error) => {
-                alert("상품 등록 실패");
+                alert("상품 수정 실패");
                 console.log(error);
             }
         });
     }
-    productDataDeleteRequest(productId){
+
+    productDataDeleteRequest(productId) {
         $.ajax({
             async: false,
-            type: "DELETE",
+            type: "delete",
             url: "/api/admin/product/" + productId,
             dataType: "json",
             success: (response) => {
-                alert("삭제 완료");
+                alert("상품 삭제 완료!");
                 location.reload();
             },
             error: (error) => {
+                alert("상품 삭제 실패!");
                 console.log(error);
-                alert("삭제 실패");
             }
-        })
+        });
     }
 }
-//load 될때 new ProductListService 해줌
+
 class ProductListService {
-    //변수명 앞에 # 붙이면 프라이빗 -> 싱글톤을 위해
     static #instance = null;
 
     constructor() {
@@ -128,6 +129,8 @@ class ProductListService {
     }
 }
 
+
+//검색 서비스
 class TopOptionService {
     constructor() {
         this.pageMovement = new PageMovement();
@@ -139,6 +142,7 @@ class TopOptionService {
         this.pageMovement.addEvent();
     }
 
+    //카테고리랑 검색창 selector
     addOptionsEvent() {
         const categorySelectInput = document.querySelector(".category-select .product-input");
         const searchInput = document.querySelector(".product-search .product-input");
@@ -147,7 +151,7 @@ class TopOptionService {
         const productListReqParams = ProductListReqParams.getInstance();
 
         categorySelectInput.onchange = () => {
-            productListReqParams.setPage(1);
+            productListReqParams.setPage(1); //페이지 구동 알아보기
             productListReqParams.setCategory(categorySelectInput.value);
             ProductListService.getInstance().loadProductList();
         }
@@ -165,6 +169,7 @@ class TopOptionService {
             }
         }
     }
+
 }
 
 class PageMovement {
@@ -225,17 +230,16 @@ class PageMovement {
                 }else {
                     productListReqParams.setPage(pageNumberText);
                 }
-                //싱글톤 해주었기 때문에 바로 접근
+
                 ProductListService.getInstance().loadProductList();
             }
         }
     }
 }
 
-
 class ElementService {
     static #instance = null;
-    #productDtl = null;
+    #productDtl = null; //상품 하나의 정보가 담김(responseData[index])
 
     static getInstance() {
         if(this.#instance == null) {
@@ -248,9 +252,10 @@ class ElementService {
         const listBody = document.querySelector(".list-body");
 
         listBody.innerHTML = "";
-
+        //responseData =  전체 상품 리스트.forEach( 상품 하나) =>
         responseData.forEach((product) => {
-            listBody.innerHTML += `
+            // if(product.category == ProductListReqParams.getInstance().getCategory()){
+                listBody.innerHTML += `
             <tr>
                 <td class="product-id">${product.id}</td>
                 <td>${product.category}</td>
@@ -265,8 +270,10 @@ class ElementService {
                 
             </tr>
             `;
-        });
+            // }
 
+        });
+        //responseData 룰 넘겨주면서 버튼클릭시 dtl보여주거나 수정하는 이벤트 위해 호출!
         this.addProductMstEvent(responseData);
     }
 
@@ -295,7 +302,6 @@ class ElementService {
                             if(changeFlag) {
                                 productDetail.classList.add("detail-invisible");
                                 productDetail.innerHTML = "";
-                                                //해당 인덱스의 데이터를 productDtl 이라는 변수로 전달
                                 this.createProductDtl(productDetails[index]);
                                 productDetails[index].classList.remove("detail-invisible");
                             }
@@ -322,15 +328,17 @@ class ElementService {
         deleteButtons.forEach((deleteButton, index) => {
             deleteButton.onclick = () => {
                 if(confirm("상품을 삭제하시겠습니까?")){
-                    const productApi = new ProductApi();            //productId 인데 이게 어디서????
+                    const productApi = new ProductApi();
                     productApi.productDataDeleteRequest(responseData[index].id);
                 }
             }
         });
     }
-                //productDetails[index] -> 클릭한 인덱스의 detail : line 299
+
     createProductDtl(productDetail) {
         // productImgList = productDataList[index].productImgFiles;
+        //전역에 선언되어서 가져다 쓰기 편하기 때문에 mstEvent에서 #productDtl에 responseData[index] 를 대입해줬음
+        //똑같은 값이 대입된 productDetail을 안쓰고 this.#productDtl 쓰는 이유
 
         productDetail.innerHTML = `
         <td colspan="8">
@@ -456,6 +464,7 @@ class ElementService {
     }
 }
 
+//수정시 기본 이미지리스트, 삭제한 이미지리스트, 새로운 이미지리스트, 새로운 이미지 주소? 리스트, 업데이트된 폼 리스트
 class ProductRepository {
     oldImgList;
     oldImgDeleteList;
@@ -463,6 +472,7 @@ class ProductRepository {
     newImgSrcList;
     updateFormData;
 
+    //setter
     constructor(productDtl) {
         this.oldImgList = productDtl.productImgFiles;
         this.oldImgDeleteList = new Array();
@@ -515,7 +525,7 @@ class ProductImgFileService {
         fileInput.onchange = () => {
             const formData = new FormData(document.querySelector("form"));
             let changeFlge = false;
-
+            //질문 : formData를 생성해줬는데
             formData.forEach((value) => {
                 if(value.size != 0) {
                     this.productRepository.newImgList.push(value);
@@ -560,7 +570,5 @@ class ProductImgFileService {
 
 
 window.onload = () => {
-    //생성만 땅 해주면 ~
     new ProductListService();
 }
-

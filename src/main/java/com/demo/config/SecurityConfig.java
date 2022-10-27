@@ -52,7 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .permitAll()        //static 이랑 image 으로 들어오면 전부 승인해라
 
                 /*<<<<<<<<<<<<<<<<<<<API>>>>>>>>>>>>>>>>>>>>>>*/
-                .antMatchers("/api/account/register")
+                .antMatchers("/api/account/register","/api/collections/**")
                 .permitAll()
 
                 .anyRequest()       //antMatchers 외에 다른 모든 요청들은
