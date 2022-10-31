@@ -40,7 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/admin/**", "/api/admin/**")
                 .access("hasRole('ADMIN') or hasRole('MANAGER')")
 
-                .antMatchers("/account")//해당 주소 요청은
+                .antMatchers("/account", "/order/**")//해당 주소 요청은
                 .access("hasRole('USER') or hasRole('ADMIN') or hasRole('MANAGER')")//USER나 ADMIN이나 MANAGER면 다 들어올수 있다.
                 .antMatchers("/", "/index", "/collections/**")//해당 주소 요청은
                 .permitAll()//모두 접근 가능 (even 회원 아니여도)

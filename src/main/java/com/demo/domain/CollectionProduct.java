@@ -1,6 +1,6 @@
 package com.demo.domain;
 
-import com.demo.dto.CollectionListRespDto;
+import com.demo.dto.shop.CollectionListRespDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

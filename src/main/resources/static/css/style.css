@@ -1,17 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
 
-*{
+* {
     box-sizing: border-box;
 
+    /* font-family: 'Noto Sans KR', sans-serif; */
     font-size: 11px;
-    /*font-family: 'Noto Sans KR', sans-serif;
-    letter-spacing: 1px;*/
-}
-body, html{
-    margin: 0;
+    /* letter-spacing: 1px; */
 }
 
-input, select, textarea{
+body, html {
+    margin: 0px;
+}
+
+input, select, textarea {
     margin-bottom: 15px;
     border: 1px solid rgb(198, 198, 198);
     padding: 10px;
@@ -19,105 +20,99 @@ input, select, textarea{
     width: 100%;
 }
 
-input:focus, select:focus, textarea:focus{
+input:focus, select:focus, textarea:focus {
     outline: none;
     border: 1px solid black;
 }
 
-@keyframes button-fadein{
-    from{
+@keyframes button-fadein {
+    from {
         background-color: white;
     }
-    to{
+    to {
         background-color: black;
         text-decoration: underline;
-        color: white;
     }
 }
-@keyframes button-fadeout{
-    from{
+@keyframes button-fadeout {
+    from {
         background-color: black;
         text-decoration: underline;
-        color: white;
     }
-    to{
-        background-color: white
+    to {
+        background-color: white;
     }
 }
-@keyframes black-button-fadein{
-    from{
-        background-color: black
+@keyframes black-button-fadein {
+    from {
+        background-color: black;
     }
-    to{
+    to {
         background-color: rgb(100, 100, 100);
         text-decoration: underline;
     }
 }
-@keyframes black-button-fadeout{
-    from{
+@keyframes black-button-fadeout {
+    from {
         background-color: rgb(100, 100, 100);
         text-decoration: underline;
     }
-    to{
-        background-color: black
+    to {
+        background-color: black;
     }
 }
 
-button{
+button {
+    margin-bottom: 10px;
     border: 1px solid black;
     padding: 15px 0px;
-    margin-bottom: 10px;
     width: 80px;
 
     font-weight: 700;
     color: black;
-    background-color: #fff;
+    background-color: white;
     animation: button-fadeout 0.1s linear forwards;
 
     cursor: pointer;
-    
 }
 
-button:active{
+button:active {
     animation: button-fadein 0.1s linear forwards;
+    color: white;
 }
 
-.black-button{
+.black-button {
     color: white;
     background-color: black;
-
     animation: black-button-fadeout 0.1s linear forwards;
 }
 
-.black-button:active{
+.black-button:active {
     animation: black-button-fadein 0.1s linear forwards;
 }
 
-
-
-a{
+a {
     text-decoration: none;
-    color: black; 
+    color: black;
 }
 
-a:hover{
+a:hover {
     font-weight: 700;
     text-decoration: underline;
 }
 
-
-.a-selected{
+.a-selected {
     font-weight: 700;
     text-decoration: underline;
 }
 
-ul{
+ul {
     margin: 0;
     padding: 0;
     list-style-type: none;
 }
 
-main{
+main {
     margin-top: 60px;
 }
 

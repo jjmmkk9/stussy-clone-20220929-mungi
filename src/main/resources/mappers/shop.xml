@@ -3,6 +3,30 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.demo.repository.ShopRepository">
+
+    <resultMap id="product_img_file" type="com.demo.domain.ProductImgFile">
+        <result property="id" column="file_id"></result>
+        <result property="origin_name" column="origin_name"></result>
+        <result property="temp_name" column="temp_name"></result>
+    </resultMap>
+    <resultMap id="product_detail" type="com.demo.domain.ProductDetail">
+        <result property="group_id" column="group_id"></result>
+        <result property="name" column="name"></result>
+        <result property="price" column="price"></result>
+        <result property="color" column="color"></result>
+        <result property="size" column="size"></result>
+        <result property="info_simple" column="info_simple"></result>
+        <result property="info_detail" column="info_detail"></result>
+        <result property="info_option" column="info_option"></result>
+        <result property="info_management" column="siinfo_managementze"></result>
+        <result property="info_shipping" column="info_shipping"></result>
+
+        <collection property="productImgFiles" javaType="list" resultMap="product_img_file"></collection>
+    </resultMap>
+
+
+
+
 <select
         id="getCollectionList"
         parameterType="hashmap"
@@ -40,30 +64,36 @@
         </if>
     GROUP BY
         pm.group_id
-    LIMIT 1, 8
+    LIMIT #{index}, 16
 
 </select>
 
-    <select id="getProduct" parameterType="Integer" resultType="">
-        SELECT
-            pm.group_id,
-            pm.name,
-            pm.price,
-            pm.color,
-            pm.size,
-            pim.temp_name
-        FROM
-            product_mst pm
-            LEFT OUTER JOIN product_img pim ON(pim.product_id = (SELECT
-                                                                    id
-                                                                from
-                                                                    product_mst
-                                                                where
-                                                                    group_id = #{group_id}
-                                                                LIMIT 1))
-        WHERE
-            group_id = #{group_id}
-    </select>
-
+<select id="getProduct" parameterType="Integer" resultMap="product_detail">
+    SELECT
+        pm.group_id,
+        pm.name,
+        pm.price,
+        pm.color,
+        pm.size,
+        pm.info_simple,
+        pm.info_detail,
+        pm.info_option,
+        pm.info_management,
+        pm.info_shipping,
+        pim.id as file_id,
+        pim.origin_name,
+        pim.temp_name
+    FROM
+        product_mst pm
+        LEFT OUTER JOIN product_img pim ON(pim.product_id = (SELECT
+                                                                id
+                                                            from
+                                                                product_mst
+                                                            where
+                                                                group_id = #{groupId}
+                                                            LIMIT 1))
+    WHERE
+        group_id = #{groupId}
+</select>
 
 </mapper>

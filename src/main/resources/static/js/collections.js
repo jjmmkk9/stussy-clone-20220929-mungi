@@ -1,21 +1,21 @@
-class CollectionsReqParams{
+class CollectionReqParam{
     //싱글톤
     static #instance = null;
     #page = 0;
 
     constructor() {
-        this.page = 1;
+        this.#page = 1;
     }
 
     static getInstance(){
         if(this.#instance == null){
-            this.#instance = new CollectionsReqParams();
+            this.#instance = new CollectionReqParam();
         }
         return this.#instance;
     }
 
     getPage(){return this.#page;}
-    setPage(page){this.#page = page}
+    setPage(page){this.#page = page;}
 
     getObject() {
         return{
@@ -63,7 +63,6 @@ class CollectionsApi{
 class CollectionsService{
     static #instance = null;
 
-
     static getInstance(){
         if(this.#instance == null){
             this.#instance = new CollectionsService();
@@ -71,10 +70,13 @@ class CollectionsService{
         return this.#instance;
     }
 
+    groupIdList = new Array();
+
     loadCollections() {
-        const responseData = CollectionsApi.getInstance().getCollections(CollectionsReqParams.getInstance().getObject());
+        const responseData = CollectionsApi.getInstance().getCollections(CollectionReqParam.getInstance().getObject());
         const collectionProducts = document.querySelector(".collection-products");
         responseData.forEach(collection => {
+            this.groupIdList.push(collection.groupId);
             collectionProducts.innerHTML += `
                 <li class="collection-product">
                     <div class="product-img">
@@ -82,10 +84,11 @@ class CollectionsService{
                     </div>
                     <div class="product-name">${collection.name}</div>
                     <div class="product-price">${collection.price}원</div>
+                    <div class="product-group">그룹아이디 ${collection.groupId}</div>
                 </li>
             `;
         });
-        this.addProductClickEvent(responseData);
+        this.addProductClickEvent();
         this.addScrollEvent();
     }
 
@@ -98,18 +101,18 @@ class CollectionsService{
         body.onscroll = () =>{
             let scrollStatus = body.offsetHeight - html.clientHeight - html.scrollTop;
             if(scrollStatus > -1 && scrollStatus < 30){
-                CollectionsReqParams.getInstance().setPage(Number(CollectionsReqParams.getInstance().getPage()) + 1); //페이지 1 늘려서 다시 loadCollections
+                CollectionReqParam.getInstance().setPage(Number(CollectionReqParam.getInstance().getPage()) + 1); //페이지 1 늘려서 다시 loadCollections
                 CollectionsService.getInstance().loadCollections();
             }
         }
     }
 
-    addProductClickEvent(responseData){
-        const products = document.querySelectorAll(".collection-products");
+    addProductClickEvent(){
+        const products = document.querySelectorAll(".collection-product");
 
         products.forEach((product, index) => {
             product.onclick = () =>{
-                location.href = `/products/${responseData[index].id}`; //responseData[index]. 의 id가 상품 id
+                location.href = `/products/${this.groupIdList[index]}`; //responseData[index]. 의 id가 상품 id
             }
         })
 
