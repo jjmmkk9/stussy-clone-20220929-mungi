@@ -4,21 +4,28 @@ import com.demo.domain.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
 /*
 UserDetails를 implements 해서 클라이언트에 반환할 UserDetails 객체 만들기
  */
 @Getter
-public class PrincipalDetails implements UserDetails {
+public class PrincipalDetails implements UserDetails, OAuth2User {
 
-    private User user; //데이터 베이스에서 가져온 user entity 객체가 여기로 들어온다.
-                        //principalDetails 를 service에서 return으로 생성했을 때
+    private User user; //데이터 베이스에서 가져온 user entity 객체가 여기로 들어온다. principalDetails를 service에서 return으로 생성했을 때
+    private Map<String, Object> attributes;
 
     public PrincipalDetails(User user){
         this.user = user;
+
+    }
+    public PrincipalDetails(User user, Map<String, Object> attributes){
+        this.user = user;
+        this.attributes = attributes;
     }
 
     @Override
@@ -64,5 +71,14 @@ public class PrincipalDetails implements UserDetails {
     @Override
     public boolean isEnabled() {//계정의 활성화 여부(휴면계정, 이메일 또는 전화번호 인증 필요)
         return true;
+    }
+
+    @Override
+    public String getName() {
+        return (String) attributes.get("name");
+    }
+
+    public Map<String, Object> getAttributes() {
+        return attributes;
     }
 }

@@ -112,7 +112,7 @@ class CollectionsService{
 
         products.forEach((product, index) => {
             product.onclick = () =>{
-                location.href = `/products/${this.groupIdList[index]}`; //responseData[index]. 의 id가 상품 id
+                location.href = `/products/${this.groupIdList[index]}`;
             }
         })
 

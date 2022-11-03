@@ -27,7 +27,11 @@
 
 
 
-    <insert id="save" parameterType="com.demo.domain.User">
+    <insert id="save"
+            parameterType="com.demo.domain.User"
+            useGeneratedKeys="true"
+            keyProperty="id"
+    >
         insert into
             user_mst
         values(
@@ -44,6 +48,18 @@
         )
 
     </insert>
+
+    <update id="updateUserOauth2" parameterType="com.demo.domain.User">
+        update
+            user_mst
+        set
+            oauth_username = #{oauth_username},
+            provider = #{provider},
+            update_date = now(),
+        where
+            id = #{id}
+
+    </update>
 
     <select id="findUserByEmail" parameterType="String" resultMap="user">
         select

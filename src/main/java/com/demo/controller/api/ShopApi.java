@@ -27,5 +27,6 @@ public class ShopApi {
     public ResponseEntity<?> getProduct(@PathVariable int groupId)throws Exception {
 
         return ResponseEntity.ok(new CMRespDto<>(1, "Successfully", shopService.getProductDetails(groupId)));
+                                                                                //ProductDetailRespDto 리턴
     }
 }

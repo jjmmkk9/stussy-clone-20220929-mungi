@@ -9,4 +9,6 @@ public interface AccountRepository {
     public int save(User user);
     public User findUserByEmail(String email);
 
+    public int updateUserOauth2(User user);
+
 }

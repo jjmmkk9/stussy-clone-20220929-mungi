@@ -1,21 +1,31 @@
 package com.demo.config;
 
 import com.demo.handler.auth.AuthFailureHandler;
+import com.demo.service.auth.PrincipalOauth2Service;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 /*
 Configuration은 설정 객체 controller, repository, service등 과 같이 ioc에 등록
  */
+
+@EnableWebSecurity //기존의 WebSecurityConfigurerAdapter 클래스를 해당 SecurityConfig로 대체하겠다.
 @Configuration
-//기존의 WebSecurityConfigurerAdapter 클래스를 해당 SecurityConfig로 대체하겠다.
-@EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private final PrincipalOauth2Service principalOauth2Service;
 
     //BCtyptPasswordEncoder는 원래 라이브러리에 있는 객체여서 우리가 ioc에 등록할 수 없다
     //Configuration의 객체들은 bean에 등록할수 있어서 BCryptPasswordEncoder를 생성해서 리턴하는
@@ -52,7 +62,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .permitAll()        //static 이랑 image 으로 들어오면 전부 승인해라
 
                 /*<<<<<<<<<<<<<<<<<<<API>>>>>>>>>>>>>>>>>>>>>>*/
-                .antMatchers("/api/account/register","/api/collections/**")
+                .antMatchers("/api/account/register","/api/collections/**", "/api/auth/**")
                 .permitAll()
 
                 .anyRequest()       //antMatchers 외에 다른 모든 요청들은
@@ -68,6 +78,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                                                     //security 에 자동으로 컨트롤러가 만들어지고 그 포스트 매핑이 account/login
                                                     //그래서 이 url의 post 요청이 들어오면 필터 걸어라 -> principalDetailsService로 전달
                 .failureHandler(new AuthFailureHandler())//에러가 발생하면 이 핸들러로
+                .and()
+                .oauth2Login()
+                .userInfoEndpoint()
+                /*
+                 * 1. google, naver, kakao 로그인 요청 -> 코드를 발급(토큰)
+                 * 2. 발급받은 코드로 에세스토큰을 발급요청 -> 에세스토큰 발급
+                 * 3. 발급받은 에세스토큰으로 스코프에 등록된 프로필 정보를 요청할 수 있게된다.
+                 * 4. 해당 정보를 response또는 Attributes로 전달 받음
+                 */
+                .userService(principalOauth2Service)
+                .and()
                 .defaultSuccessUrl("/index");//이전 페이지가 없을 때 돌아갈 곳 없으니까 로그인 하면 index 로 보내라
     }
 }

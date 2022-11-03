@@ -12,7 +12,7 @@ class ProductApi{
     getProduct(){
         let responseData = null;
         const uri = location.href;
-        const groupId = uri.substring(uri.lastIndexOf('/') + 1);
+        const groupId = uri.substring(uri.lastIndexOf("/") + 1);
 
         $.ajax({
             async:false,
@@ -73,11 +73,12 @@ class ProductDetailService {
         const h_groupId = document.querySelector("#group-id");
         const h_productName = document.querySelector("#product-name");
         const h_productPrice = document.querySelector("#product-price");
-        const h_productImage =
+        const h_productImg = document.querySelector("#product-img");
 
         h_groupId.value = responseData.groupId;
         h_productName.value = responseData.name;
         h_productPrice.value = responseData.price;
+        h_productImg.value = responseData.imgNames[0];
 
         productTitle.textContent = responseData.name;
         productPrice.textContent = responseData.price;
@@ -102,8 +103,8 @@ ${responseData.infoDetail}`;
     addColorOptionsSelectEvent(options) {
         const productColor = document.querySelector(".product-color");
         Object.entries(options).forEach(entry => {
-            if(productColor.value == entry[0]) {
-                const productSize = document.querySelector(".product-size");
+            if(productColor.value == entry[0]) { //색깔 동일하면 사이즈
+                const productSize = document.querySelector(".product-size"); //<div>
                 productSize.innerHTML = "";
                 entry[1].forEach((size, index) => {
                     productSize.innerHTML += `

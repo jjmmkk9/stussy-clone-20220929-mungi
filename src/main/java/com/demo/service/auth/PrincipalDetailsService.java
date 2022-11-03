@@ -9,9 +9,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-/*
-로그인 중
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor                        //security 의 UserDetailService 우리가 override 해서 사용

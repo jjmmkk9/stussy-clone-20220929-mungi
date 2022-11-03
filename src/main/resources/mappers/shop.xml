@@ -18,7 +18,7 @@
         <result property="info_simple" column="info_simple"></result>
         <result property="info_detail" column="info_detail"></result>
         <result property="info_option" column="info_option"></result>
-        <result property="info_management" column="siinfo_managementze"></result>
+        <result property="info_management" column="info_management"></result>
         <result property="info_shipping" column="info_shipping"></result>
 
         <collection property="productImgFiles" javaType="list" resultMap="product_img_file"></collection>
